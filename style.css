@@ -1,0 +1,93 @@
+/* ==================== GENEL SAYFA STİLLERİ ==================== */
+
+/* Sayfa arka planı ve genel font ayarları */
+body {
+    background-color: #f8f9fa;  /* Açık gri arka plan */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  /* Modern font */
+}
+
+/* Ana container - içeriklerin ortalanması için */
+.container {
+    max-width: 800px;      /* Maksimum genişlik */
+    margin: 50px auto;     /* Üstten 50px boşluk, yatayda ortala */
+}
+
+/* ==================== KART STİLLERİ ==================== */
+
+/* Genel kart stilleri - giriş, kayıt ve not kartları için */
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Hafif gölge efekti */
+    border: none;          /* Varsayılan kenarlığı kaldır */
+    border-radius: 10px;   /* Köşeleri yuvarla */
+}
+
+/* Ana buton rengi */
+.btn-primary {
+    background-color: #007bff;  /* Mavi arka plan */
+    border-color: #007bff;      /* Mavi kenarlık */
+}
+
+/* ==================== NOT KART STİLLERİ ==================== */
+
+/* Her not kartı arasında boşluk ve hover efekti */
+.note-card {
+    margin-bottom: 20px;                /* Alt boşluk */
+    transition: transform 0.2s;         /* Yumuşak geçiş efekti */
+}
+
+/* Not kartının üzerine gelince hafif yukarı kalk */
+.note-card:hover {
+    transform: translateY(-2px);        /* 2px yukarı hareket */
+}
+
+/* Üst navigasyon çubuğu */
+.navbar {
+    background-color: #343a40 !important;  /* Koyu gri arka plan */
+}
+
+/* ==================== ÖZEL STİLLER ==================== */
+
+/* Giriş ve kayıt sayfası için özel container */
+.login-container {
+    max-width: 400px;     /* Dar genişlik */
+    margin: 100px auto;   /* Üstten daha fazla boşluk */
+}
+
+/* Not içeriği - uzun metinleri kısalt */
+.note-content {
+    max-height: 100px;              /* Maksimum yükseklik */
+    overflow: hidden;               /* Taşan kısmı gizle */
+    text-overflow: ellipsis;        /* Sonuna "..." ekle */
+}
+
+/* Küçük butonlar arasında boşluk */
+.btn-sm {
+    margin-right: 5px;    /* Sağ boşluk */
+}
+
+/* Uyarı mesajları için üst boşluk */
+.alert {
+    margin-top: 20px;     /* Üst boşluk */
+}
+
+/* ==================== FORM STİLLERİ ==================== */
+
+/* Input alanları odaklandığında mavi kenarlık */
+.form-control:focus {
+    border-color: #007bff;                                    /* Mavi kenarlık */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);      /* Mavi gölge efekti */
+}
+
+/* ==================== MOBİL UYUMLULUK ==================== */
+
+/* Tablet ve mobil cihazlar için ayarlar */
+@media (max-width: 768px) {
+    .container {
+        margin: 20px auto;    /* Daha az üst boşluk */
+        padding: 0 15px;      /* Yan boşluklar */
+    }
+    
+    .login-container {
+        margin: 50px auto;    /* Daha az üst boşluk */
+    }
+}
