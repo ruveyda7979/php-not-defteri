@@ -77,62 +77,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <div class="login-container">
-            <!-- Ana giriş kartı -->
-            <div class="card">
-                <!-- Kart başlığı -->
-                <div class="card-header text-center">
-                    <h3>🗒️ Not Defteri</h3>
-                    <p class="text-muted">Giriş Yap</p>
-                </div>
-                
-                <!-- Kart içeriği -->
-                <div class="card-body">
-                    <!-- HATA MESAJI GÖSTER -->
-                    <?php if ($error): ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?php echo $error; ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <!-- BAŞARI MESAJI GÖSTER -->
-                    <?php if ($success): ?>
-                        <div class="alert alert-success" role="alert">
-                            <?php echo $success; ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <!-- GİRİŞ FORMU -->
-                    <form method="POST">
-                        <!-- Kullanıcı adı alanı -->
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Kullanıcı Adı</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
-                        </div>
-                        
-                        <!-- Şifre alanı -->
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Şifre</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        
-                        <!-- Giriş butonu -->
-                        <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
-                    </form>
-                </div>
-                
-                <!-- Kart alt bilgisi -->
-                <div class="card-footer text-center">
-                    <p class="mb-0">Hesabın yok mu? <a href="register.php">Kayıt Ol</a></p>
-                </div>
+    <!-- Tüm içeriği ortalayan ve kutu şeklinde gösteren container -->
+    <div class="container" style="max-width: 400px; margin-top: 60px;">
+        <!-- Ana başlık ve açıklama -->
+        <div class="text-center mb-4">
+            <h3>🗒️ Not Defteri</h3>
+            <p class="text-muted">Giriş Yap</p>
+        </div>
+
+        <!-- Hata mesajı göster -->
+        <?php if ($error): ?>
+            <div class="alert alert-danger" role="alert">
+                <?php echo $error; ?>
             </div>
+        <?php endif; ?>
+        <!-- Başarı mesajı göster -->
+        <?php if ($success): ?>
+            <div class="alert alert-success" role="alert">
+                <?php echo $success; ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Giriş formu başlangıcı -->
+        <form method="POST">
+            <!-- Kullanıcı adı alanı -->
+            <div class="mb-3">
+                <label for="username" class="form-label">Kullanıcı Adı</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <!-- Şifre alanı -->
+            <div class="mb-3">
+                <label for="password" class="form-label">Şifre</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <!-- Giriş butonu -->
+            <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+        </form>
+        <!-- Giriş formu bitişi -->
+
+        <!-- Alt bilgi: Kayıt ol linki -->
+        <div class="text-center mt-3">
+            <p class="mb-0">Hesabın yok mu? <a href="register.php">Kayıt Ol</a></p>
         </div>
     </div>
-    
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
     <!-- Özel JavaScript dosyamız -->
     <script src="app.js"></script>
 </body>
