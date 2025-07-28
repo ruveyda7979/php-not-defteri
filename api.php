@@ -17,11 +17,45 @@ switch ($action) {
     case 'add_note':
         $title = clean($_POST['title'] ?? '');
         $content = clean($_POST['content'] ?? '');
+        $status = clean($_POST['status'] ?? 'tamamlanmadı');
+        $category = isset($_POST['category']) && $_POST['category'] !== '' ? (int)$_POST['category'] : null;
+        $tagsRaw = $_POST['tags'] ?? '';
 
         if ($title) {
-            $stmt = $pdo->prepare("INSERT INTO notes (user_id, title, content) VALUES (?, ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $title, $content]);
-            echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
+            // Notu ekle
+            if ($category) {
+                $stmt = $pdo->prepare("INSERT INTO notes (user_id, title, content, status, category_id) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$_SESSION['user_id'], $title, $content, $status, $category]);
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO notes (user_id, title, content, status) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$_SESSION['user_id'], $title, $content, $status]);
+            }
+            $noteId = $pdo->lastInsertId();
+
+            // Etiket işlemleri
+            if (trim($tagsRaw) !== '') {
+                $tagsArr = array_filter(array_map('trim', explode(',', $tagsRaw)));
+                foreach ($tagsArr as $tagName) {
+                    if ($tagName === '') continue;
+                    // Etiket var mı kontrol et
+                    $stmt = $pdo->prepare("SELECT id FROM tags WHERE user_id = ? AND name = ?");
+                    $stmt->execute([$_SESSION['user_id'], $tagName]);
+                    $tag = $stmt->fetch();
+                    if ($tag) {
+                        $tagId = $tag['id'];
+                    } else {
+                        // Yoksa ekle
+                        $stmt = $pdo->prepare("INSERT INTO tags (user_id, name) VALUES (?, ?)");
+                        $stmt->execute([$_SESSION['user_id'], $tagName]);
+                        $tagId = $pdo->lastInsertId();
+                    }
+                    // note_tags ilişkisini ekle
+                    $stmt = $pdo->prepare("INSERT IGNORE INTO note_tags (note_id, tag_id) VALUES (?, ?)");
+                    $stmt->execute([$noteId, $tagId]);
+                }
+            }
+
+            echo json_encode(['success' => true, 'id' => $noteId]);
         } else {
             echo json_encode(['success' => false]);
         }

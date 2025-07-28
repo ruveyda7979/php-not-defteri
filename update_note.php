@@ -13,9 +13,10 @@ if (
     $userId = $_SESSION['user_id'];
     $title = trim($_POST['title']);
     $content = trim($_POST['content']);
+    $status = trim($_POST['status'] ?? 'tamamlanmadı');
     // Notun kullanıcıya ait olup olmadığını kontrol et ve güncelle
-    $stmt = $pdo->prepare('UPDATE notes SET title = ?, content = ? WHERE id = ? AND user_id = ?');
-    $success = $stmt->execute([$title, $content, $noteId, $userId]);
+    $stmt = $pdo->prepare('UPDATE notes SET title = ?, content = ?, status = ? WHERE id = ? AND user_id = ?');
+    $success = $stmt->execute([$title, $content, $status, $noteId, $userId]);
     if ($success) {
         echo json_encode(['success' => true]);
     } else {

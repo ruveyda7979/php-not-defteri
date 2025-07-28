@@ -8,6 +8,9 @@ function addNote() {
     // Form alanlarından değerleri al
     const title = document.getElementById('noteTitle').value;
     const content = document.getElementById('noteContent').value;
+    const status = document.getElementById('noteStatus').value;
+    const category = document.getElementById('noteCategory').value;
+    const tags = document.getElementById('noteTags').value;
     
     // Başlık kontrolü - boş olamaz
     if (!title.trim()) {
@@ -19,7 +22,7 @@ function addNote() {
     fetch('api.php?action=add_note', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}`
+        body: `title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}&status=${encodeURIComponent(status)}&category=${encodeURIComponent(category)}&tags=${encodeURIComponent(tags)}`
     })
     .then(response => response.json())  // JSON yanıtını çözümle
     .then(data => {
