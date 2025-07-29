@@ -110,10 +110,10 @@ $notes = $stmt->fetchAll();
     </nav>
 
     <!-- Notlar listesi -->
-    <div class="container" style="max-width: 700px; margin-top: 40px;">
-        <h3 class="mt-4 mb-3 text-center">Tüm Notlarım</h3>
+    <div class="notes-container">
+        <h3 class="mt-0 mb-3 text-center">Tüm Notlarım</h3>
         <!-- Arama ve Filtreleme Formu -->
-        <form class="d-flex gap-2 mb-4" method="get">
+        <form class="d-flex gap-2 mb-4 filter-form" method="get">
             <div class="flex-fill">
                 <input type="text" name="search" class="form-control" placeholder="Başlık veya içerikte ara" value="<?= htmlspecialchars($search) ?>">
             </div>
@@ -140,54 +140,59 @@ $notes = $stmt->fetchAll();
                 <button type="submit" class="btn btn-primary w-100">Filtrele</button>
             </div>
         </form>
-        <div id="notes-list">
+        
+        <!-- Notlar scroll alanı -->
+        <div class="notes-scroll-area" id="notes-list">
         <?php if (empty($notes)): ?>
             <div class="alert alert-info text-center">Henüz hiç notunuz yok.</div>
         <?php endif; ?>
         <?php foreach ($notes as $note): ?>
-            <div class="card note-card p-2 mb-2 compact-view" data-note-id="<?= $note['id'] ?>">
+            <div class="card note-card p-3 mb-3 compact-view clickable" data-note-id="<?= $note['id'] ?>" onclick="openNoteModal(this)">
                 <div class="note-view">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <h5 class="note-title-text mb-0"><?= htmlspecialchars($note['title']) ?></h5>
                         <div class="d-flex gap-1">
-                            <button class="btn btn-warning btn-sm edit-btn">Düzenle</button>
-                            <button class="btn btn-danger btn-sm delete-btn">Sil</button>
+                            <button class="btn btn-warning btn-sm edit-btn" onclick="event.stopPropagation()">Düzenle</button>
+                            <button class="btn btn-danger btn-sm delete-btn" onclick="event.stopPropagation()">Sil</button>
                         </div>
                     </div>
                     <p class="note-content-text"><?= nl2br(htmlspecialchars($note['content'])) ?></p>
-                    <?php if (!empty($note['category_name'])): ?>
-                        <span class="badge bg-info text-dark mb-1">Kategori: <?= htmlspecialchars($note['category_name']) ?></span>
-                    <?php endif; ?>
-                    <?php
-                    // Etiketleri çek
-                    $stmtTags = $pdo->prepare("SELECT tags.name FROM note_tags JOIN tags ON note_tags.tag_id = tags.id WHERE note_tags.note_id = ? ORDER BY tags.name ASC");
-                    $stmtTags->execute([$note['id']]);
-                    $tagNames = $stmtTags->fetchAll(PDO::FETCH_COLUMN);
-                    if ($tagNames): ?>
-                        <div class="mb-1">
-                            <span class="badge bg-secondary">Etiketler: <?= htmlspecialchars(implode(', ', $tagNames)) ?></span>
+                    
+                    <div class="note-meta">
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <?php if (!empty($note['category_name'])): ?>
+                                <span class="badge bg-info text-dark">Kategori: <?= htmlspecialchars($note['category_name']) ?></span>
+                            <?php endif; ?>
+                            <?php
+                            // Etiketleri çek
+                            $stmtTags = $pdo->prepare("SELECT tags.name FROM note_tags JOIN tags ON note_tags.tag_id = tags.id WHERE note_tags.note_id = ? ORDER BY tags.name ASC");
+                            $stmtTags->execute([$note['id']]);
+                            $tagNames = $stmtTags->fetchAll(PDO::FETCH_COLUMN);
+                            if ($tagNames): ?>
+                                <span class="badge bg-secondary">Etiketler: <?= htmlspecialchars(implode(', ', $tagNames)) ?></span>
+                            <?php endif; ?>
+                            <!-- Durum gösterimi -->
+                            <?php
+                            $statusClass = '';
+                            $statusText = '';
+                            switch($note['status']) {
+                                case 'tamamlandı':
+                                    $statusClass = 'bg-success';
+                                    $statusText = 'Tamamlandı';
+                                    break;
+                                case 'sorunlu':
+                                    $statusClass = 'bg-danger';
+                                    $statusText = 'Sorunlu';
+                                    break;
+                                default:
+                                    $statusClass = 'bg-secondary';
+                                    $statusText = 'Tamamlanmadı';
+                            }
+                            ?>
+                            <span class="badge <?= $statusClass ?>">Durum: <?= $statusText ?></span>
                         </div>
-                    <?php endif; ?>
-                    <!-- Durum gösterimi -->
-                    <?php
-                    $statusClass = '';
-                    $statusText = '';
-                    switch($note['status']) {
-                        case 'tamamlandı':
-                            $statusClass = 'bg-success';
-                            $statusText = 'Tamamlandı';
-                            break;
-                        case 'sorunlu':
-                            $statusClass = 'bg-danger';
-                            $statusText = 'Sorunlu';
-                            break;
-                        default:
-                            $statusClass = 'bg-secondary';
-                            $statusText = 'Tamamlanmadı';
-                    }
-                    ?>
-                    <span class="badge <?= $statusClass ?> mb-1">Durum: <?= $statusText ?></span>
-                    <small class="text-muted">Oluşturulma: <?= formatDate($note['created_at']) ?></small>
+                        <small class="text-muted">Oluşturulma: <?= formatDate($note['created_at']) ?></small>
+                    </div>
                 </div>
                 <!-- Düzenleme formu (başta gizli) -->
                 <form class="note-edit-form" style="display:none;">
@@ -210,7 +215,7 @@ $notes = $stmt->fetchAll();
 
         <!-- Sayfalama Navigasyonu -->
         <?php if ($totalPages > 1): ?>
-        <nav aria-label="Not sayfaları" class="mt-4">
+        <nav aria-label="Not sayfaları" class="mt-3">
             <ul class="pagination justify-content-center">
                 <?php if ($page > 1): ?>
                     <li class="page-item">
@@ -234,16 +239,94 @@ $notes = $stmt->fetchAll();
         <?php endif; ?>
     </div>
 
+    <!-- Not Detay Modal -->
+    <div id="noteModal" class="note-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="modalTitle">Not Başlığı</h4>
+                <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-content-text" id="modalContent">
+                    Not içeriği burada görünecek...
+                </div>
+                <div class="modal-meta">
+                    <div class="modal-badges" id="modalBadges">
+                        <!-- Badge'ler buraya gelecek -->
+                    </div>
+                    <div class="modal-date" id="modalDate">
+                        Oluşturulma tarihi...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     // Notlar listesinde düzenle/sil işlemleri için event delegation
     document.addEventListener('DOMContentLoaded', function() {
+        // Smooth scroll için
+        const scrollArea = document.querySelector('.notes-scroll-area');
+        if (scrollArea) {
+            scrollArea.style.scrollBehavior = 'smooth';
+        }
+
+        // Modal fonksiyonları
+        window.openNoteModal = function(card) {
+            const noteId = card.getAttribute('data-note-id');
+            const title = card.querySelector('.note-title-text').textContent;
+            const content = card.querySelector('.note-content-text').textContent;
+            const date = card.querySelector('.text-muted').textContent;
+            
+            // Badge'leri topla
+            const badges = card.querySelectorAll('.badge');
+            let badgeHtml = '';
+            badges.forEach(badge => {
+                badgeHtml += `<span class="badge ${badge.className.split(' ').slice(1).join(' ')}">${badge.textContent}</span>`;
+            });
+            
+            // Modal içeriğini doldur
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').textContent = content;
+            document.getElementById('modalBadges').innerHTML = badgeHtml;
+            document.getElementById('modalDate').textContent = date;
+            
+            // Modal'ı göster
+            const modal = document.getElementById('noteModal');
+            modal.classList.add('show');
+            
+            // ESC tuşu ile kapatma
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+            
+            // Modal dışına tıklayınca kapatma
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        };
+
+        window.closeModal = function() {
+            const modal = document.getElementById('noteModal');
+            modal.classList.remove('show');
+        };
+
         // Silme işlemi
         document.querySelectorAll('.delete-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 if (!confirm('Bu notu silmek istediğinize emin misiniz?')) return;
                 const card = btn.closest('.note-card');
                 const noteId = card.getAttribute('data-note-id');
+                
+                // Loading göster
+                btn.innerHTML = '<span class="loading-spinner"></span>';
+                btn.disabled = true;
+                
                 fetch('delete_note.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -252,10 +335,24 @@ $notes = $stmt->fetchAll();
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        card.remove();
+                        // Smooth animasyonla kaldır
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.transform = 'translateX(-100%)';
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                        }, 300);
                     } else {
                         alert(data.error || 'Silme işlemi başarısız!');
+                        btn.innerHTML = 'Sil';
+                        btn.disabled = false;
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Bir hata oluştu!');
+                    btn.innerHTML = 'Sil';
+                    btn.disabled = false;
                 });
             });
         });
@@ -264,8 +361,22 @@ $notes = $stmt->fetchAll();
         document.querySelectorAll('.edit-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const card = btn.closest('.note-card');
-                card.querySelector('.note-view').style.display = 'none';
-                card.querySelector('.note-edit-form').style.display = 'block';
+                const noteView = card.querySelector('.note-view');
+                const editForm = card.querySelector('.note-edit-form');
+                
+                // Smooth geçiş
+                noteView.style.transition = 'all 0.3s ease';
+                editForm.style.transition = 'all 0.3s ease';
+                
+                noteView.style.opacity = '0';
+                setTimeout(() => {
+                    noteView.style.display = 'none';
+                    editForm.style.display = 'block';
+                    editForm.style.opacity = '0';
+                    setTimeout(() => {
+                        editForm.style.opacity = '1';
+                    }, 10);
+                }, 300);
             });
         });
 
@@ -273,8 +384,22 @@ $notes = $stmt->fetchAll();
         document.querySelectorAll('.cancel-edit').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const card = btn.closest('.note-card');
-                card.querySelector('.note-edit-form').style.display = 'none';
-                card.querySelector('.note-view').style.display = 'block';
+                const noteView = card.querySelector('.note-view');
+                const editForm = card.querySelector('.note-edit-form');
+                
+                // Smooth geçiş
+                editForm.style.transition = 'all 0.3s ease';
+                noteView.style.transition = 'all 0.3s ease';
+                
+                editForm.style.opacity = '0';
+                setTimeout(() => {
+                    editForm.style.display = 'none';
+                    noteView.style.display = 'block';
+                    noteView.style.opacity = '0';
+                    setTimeout(() => {
+                        noteView.style.opacity = '1';
+                    }, 10);
+                }, 300);
             });
         });
 
@@ -286,6 +411,13 @@ $notes = $stmt->fetchAll();
                 const noteId = card.getAttribute('data-note-id');
                 const formData = new FormData(form);
                 formData.append('id', noteId);
+                
+                // Loading göster
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="loading-spinner"></span>';
+                submitBtn.disabled = true;
+                
                 fetch('update_note.php', {
                     method: 'POST',
                     body: formData
@@ -315,18 +447,79 @@ $notes = $stmt->fetchAll();
                                     break;
                             }
                             
-                            statusBadge.className = `badge ${statusClass} mb-1`;
+                            statusBadge.className = `badge ${statusClass}`;
                             statusBadge.textContent = `Durum: ${statusText}`;
                         }
                         
-                        card.querySelector('.note-edit-form').style.display = 'none';
-                        card.querySelector('.note-view').style.display = 'block';
+                        // Smooth geçişle formu kapat
+                        const noteView = card.querySelector('.note-view');
+                        form.style.transition = 'all 0.3s ease';
+                        noteView.style.transition = 'all 0.3s ease';
+                        
+                        form.style.opacity = '0';
+                        setTimeout(() => {
+                            form.style.display = 'none';
+                            noteView.style.display = 'block';
+                            noteView.style.opacity = '0';
+                            setTimeout(() => {
+                                noteView.style.opacity = '1';
+                            }, 10);
+                        }, 300);
+                        
+                        // Başarı mesajı
+                        showNotification('Not başarıyla güncellendi!', 'success');
                     } else {
                         alert(data.error || 'Güncelleme başarısız!');
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Bir hata oluştu!');
+                })
+                .finally(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 });
             });
         });
+
+        // Bildirim gösterme fonksiyonu
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} notification`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // CSS animasyonları için style ekle
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     });
     </script>
 </body>

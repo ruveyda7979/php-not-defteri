@@ -62,6 +62,50 @@ h1::after, h2::after, h3::after {
     transform: translateY(-3px) scale(1.012);
 }
 
+/* Notlar sayfası için özel container */
+.notes-container {
+    max-width: 900px !important;
+    margin: 20px auto !important;
+    background: rgba(255,255,255,0.85) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 12px 40px rgba(44, 62, 80, 0.15) !important;
+    padding: 30px !important;
+    backdrop-filter: blur(12px) saturate(1.3) !important;
+    border: 1.5px solid rgba(77, 124, 223, 0.12) !important;
+    height: calc(100vh - 120px) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Notlar listesi için scroll alanı */
+.notes-scroll-area {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 10px 15px 0 5px !important;
+    margin-right: -10px !important;
+}
+
+/* Özel scroll bar tasarımı */
+.notes-scroll-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.notes-scroll-area::-webkit-scrollbar-track {
+    background: rgba(224, 231, 255, 0.3);
+    border-radius: 10px;
+}
+
+.notes-scroll-area::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #4f8cff 0%, #2d6cdf 100%);
+    border-radius: 10px;
+    border: 2px solid rgba(224, 231, 255, 0.3);
+}
+
+.notes-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #2d6cdf 0%, #1a4fa0 100%);
+}
+
 /* Form elemanları - soft glassmorphism ve ikon desteği */
 input[type="text"], input[type="password"], input[type="email"], textarea {
     width: 100%;
@@ -183,10 +227,17 @@ a:hover::after {
     border-radius: 16px;
     box-shadow: 0 2px 16px rgba(44, 62, 80, 0.10);
     margin-bottom: 22px;
+    margin-left: 5px !important;
+    margin-right: 5px !important;
     border: 1.5px solid #e0e7ff;
     transition: box-shadow 0.22s, border 0.18s, transform 0.13s;
     position: relative;
     overflow: hidden;
+    height: auto !important;
+    min-height: 120px !important;
+    max-height: 200px !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 .note-card::before {
     content: '';
@@ -203,13 +254,39 @@ a:hover::after {
     border: 1.5px solid #4f8cff;
     transform: translateY(-2px) scale(1.012);
 }
-.note-content {
-    font-size: 1.08em;
-    color: #374151;
-    margin-bottom: 8px;
-    z-index: 1;
-    position: relative;
+
+/* Not kartı içeriği için özel stiller */
+.note-view {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
 }
+
+.note-title-text {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    margin-bottom: 8px !important;
+    line-height: 1.3 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.note-content-text {
+    font-size: 0.95rem !important;
+    color: #4b5563 !important;
+    line-height: 1.4 !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    text-overflow: ellipsis !important;
+    margin-bottom: 8px !important;
+    flex: 1 !important;
+}
+
 .note-card .edit-btn, .note-card .delete-btn {
     padding: .25rem .75rem; /* Yanlara daha fazla boşluk */
     min-width: 90px; /* Minimum genişliği artırarak yazının sığmasını garantile */
@@ -254,8 +331,18 @@ a:hover::after {
         padding: 12px 2px;
         max-width: 99%;
     }
+    .notes-container {
+        max-width: 98% !important;
+        height: calc(100vh - 100px) !important;
+        padding: 20px 15px !important;
+    }
+    .notes-scroll-area {
+        padding: 8px 10px 0 2px !important;
+    }
     .note-card {
         padding: 8px 4px;
+        margin-left: 2px !important;
+        margin-right: 2px !important;
     }
     h1, h2, h3 {
         font-size: 1.2em;
@@ -384,4 +471,218 @@ form.d-flex .btn {
 .pagination .page-item.disabled .page-link {
     background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.5);
+}
+
+/* Filtre formu için özel stiller */
+.filter-form {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 4px 20px rgba(44, 62, 80, 0.08) !important;
+    border: 1px solid rgba(77, 124, 223, 0.1) !important;
+}
+
+/* Badge stilleri için iyileştirmeler */
+.badge {
+    font-size: 0.75rem !important;
+    padding: 0.35rem 0.6rem !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+}
+
+/* Not kartı alt kısmı için */
+.note-meta {
+    margin-top: auto !important;
+    padding-top: 8px !important;
+    border-top: 1px solid rgba(224, 231, 255, 0.5) !important;
+}
+
+/* Loading animasyonu */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Modal stilleri */
+.note-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.note-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(77, 124, 223, 0.2);
+    animation: slideInUp 0.3s ease;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #2d6cdf 0%, #4f8cff 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 20px 20px 0 0;
+    position: relative;
+}
+
+.modal-header h4 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: white;
+}
+
+.modal-close {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.modal-body {
+    padding: 25px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(224, 231, 255, 0.3);
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #4f8cff 0%, #2d6cdf 100%);
+    border-radius: 10px;
+}
+
+.modal-content-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #374151;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.modal-meta {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(224, 231, 255, 0.8);
+}
+
+.modal-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.modal-date {
+    color: #6b7280;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Modal animasyonları */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Not kartına tıklanabilir stil */
+.note-card.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.note-card.clickable:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(44, 62, 80, 0.25);
+}
+
+/* Modal responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .modal-header {
+        padding: 15px 20px;
+    }
+    
+    .modal-header h4 {
+        font-size: 1.1rem;
+    }
+    
+    .modal-body {
+        padding: 20px;
+        max-height: 65vh;
+    }
+    
+    .modal-content-text {
+        font-size: 1rem;
+    }
 }
