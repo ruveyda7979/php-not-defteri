@@ -194,21 +194,6 @@ $notes = $stmt->fetchAll();
                         <small class="text-muted">Oluşturulma: <?= formatDate($note['created_at']) ?></small>
                     </div>
                 </div>
-                <!-- Düzenleme formu (başta gizli) -->
-                <form class="note-edit-form" style="display:none;">
-                    <input type="text" name="title" class="form-control mb-2" value="<?= htmlspecialchars($note['title']) ?>" required>
-                    <textarea name="content" class="form-control mb-2" required><?= htmlspecialchars($note['content']) ?></textarea>
-                    <!-- Durum seçimi -->
-                    <select name="status" class="form-control mb-2">
-                        <option value="tamamlanmadı" <?= $note['status'] == 'tamamlanmadı' ? 'selected' : '' ?>>Tamamlanmadı</option>
-                        <option value="tamamlandı" <?= $note['status'] == 'tamamlandı' ? 'selected' : '' ?>>Tamamlandı</option>
-                        <option value="sorunlu" <?= $note['status'] == 'sorunlu' ? 'selected' : '' ?>>Sorunlu</option>
-                    </select>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success btn-sm">Kaydet</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">İptal</button>
-                    </div>
-                </form>
             </div>
         <?php endforeach; ?>
         </div>
@@ -258,6 +243,48 @@ $notes = $stmt->fetchAll();
                         Oluşturulma tarihi...
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Not Düzenleme Modal -->
+    <div id="editModal" class="note-modal">
+        <div class="modal-content edit-modal-content">
+            <div class="modal-header">
+                <h4>Not Düzenle</h4>
+                <button type="button" class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editNoteForm" class="edit-note-form">
+                    <input type="hidden" id="editNoteId" name="id">
+                    
+                    <div class="mb-3">
+                        <label for="editTitle" class="form-label">Başlık</label>
+                        <input type="text" id="editTitle" name="title" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editContent" class="form-label">İçerik</label>
+                        <textarea id="editContent" name="content" class="form-control" rows="8" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editStatus" class="form-label">Durum</label>
+                        <select id="editStatus" name="status" class="form-control">
+                            <option value="tamamlanmadı">Tamamlanmadı</option>
+                            <option value="tamamlandı">Tamamlandı</option>
+                            <option value="sorunlu">Sorunlu</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">İptal</button>
+                        <button type="submit" class="btn btn-success">
+                            <span class="btn-text">Kaydet</span>
+                            <span class="loading-spinner" style="display: none;"></span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -357,82 +384,80 @@ $notes = $stmt->fetchAll();
             });
         });
 
-        // Düzenleye tıklayınca formu aç
+        // Düzenleye tıklayınca edit modal'ını aç
         document.querySelectorAll('.edit-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const card = btn.closest('.note-card');
-                const noteView = card.querySelector('.note-view');
-                const editForm = card.querySelector('.note-edit-form');
-                
-                // Smooth geçiş
-                noteView.style.transition = 'all 0.3s ease';
-                editForm.style.transition = 'all 0.3s ease';
-                
-                noteView.style.opacity = '0';
-                setTimeout(() => {
-                    noteView.style.display = 'none';
-                    editForm.style.display = 'block';
-                    editForm.style.opacity = '0';
-                    setTimeout(() => {
-                        editForm.style.opacity = '1';
-                    }, 10);
-                }, 300);
-            });
-        });
-
-        // İptal butonuna tıklayınca formu kapat
-        document.querySelectorAll('.cancel-edit').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                const card = btn.closest('.note-card');
-                const noteView = card.querySelector('.note-view');
-                const editForm = card.querySelector('.note-edit-form');
-                
-                // Smooth geçiş
-                editForm.style.transition = 'all 0.3s ease';
-                noteView.style.transition = 'all 0.3s ease';
-                
-                editForm.style.opacity = '0';
-                setTimeout(() => {
-                    editForm.style.display = 'none';
-                    noteView.style.display = 'block';
-                    noteView.style.opacity = '0';
-                    setTimeout(() => {
-                        noteView.style.opacity = '1';
-                    }, 10);
-                }, 300);
-            });
-        });
-
-        // Düzenleme formunu submit edince AJAX ile güncelle
-        document.querySelectorAll('.note-edit-form').forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const card = form.closest('.note-card');
                 const noteId = card.getAttribute('data-note-id');
-                const formData = new FormData(form);
-                formData.append('id', noteId);
+                const title = card.querySelector('.note-title-text').textContent;
+                const content = card.querySelector('.note-content-text').textContent;
                 
-                // Loading göster
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<span class="loading-spinner"></span>';
-                submitBtn.disabled = true;
+                // Durum değerini al
+                const statusBadge = card.querySelector('.badge[class*="bg-"]');
+                let status = 'tamamlanmadı';
+                if (statusBadge) {
+                    const statusText = statusBadge.textContent;
+                    if (statusText.includes('Tamamlandı')) {
+                        status = 'tamamlandı';
+                    } else if (statusText.includes('Sorunlu')) {
+                        status = 'sorunlu';
+                    }
+                }
                 
-                fetch('update_note.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        // Güncellenen verileri göster
-                        card.querySelector('.note-title-text').textContent = form.title.value;
-                        card.querySelector('.note-content-text').textContent = form.content.value;
+                // Edit modal'ını doldur ve göster
+                document.getElementById('editNoteId').value = noteId;
+                document.getElementById('editTitle').value = title;
+                document.getElementById('editContent').value = content;
+                document.getElementById('editStatus').value = status;
+                
+                // Modal'ı göster
+                const editModal = document.getElementById('editModal');
+                editModal.classList.add('show');
+                
+                // İlk input'a focus
+                document.getElementById('editTitle').focus();
+            });
+        });
+
+        // Edit modal'ını kapat
+        window.closeEditModal = function() {
+            const editModal = document.getElementById('editModal');
+            editModal.classList.remove('show');
+        };
+
+        // Edit modal form submit
+        document.getElementById('editNoteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const spinner = submitBtn.querySelector('.loading-spinner');
+            
+            // Loading göster
+            btnText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+            submitBtn.disabled = true;
+            
+            fetch('update_note.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Güncellenen verileri göster
+                    const noteId = formData.get('id');
+                    const card = document.querySelector(`[data-note-id="${noteId}"]`);
+                    
+                    if (card) {
+                        card.querySelector('.note-title-text').textContent = formData.get('title');
+                        card.querySelector('.note-content-text').textContent = formData.get('content');
                         
                         // Durum badge'ini güncelle
                         const statusBadge = card.querySelector('.badge[class*="bg-"]');
                         if (statusBadge) {
-                            const status = form.status.value;
+                            const status = formData.get('status');
                             let statusClass = 'bg-secondary';
                             let statusText = 'Tamamlanmadı';
                             
@@ -450,37 +475,42 @@ $notes = $stmt->fetchAll();
                             statusBadge.className = `badge ${statusClass}`;
                             statusBadge.textContent = `Durum: ${statusText}`;
                         }
-                        
-                        // Smooth geçişle formu kapat
-                        const noteView = card.querySelector('.note-view');
-                        form.style.transition = 'all 0.3s ease';
-                        noteView.style.transition = 'all 0.3s ease';
-                        
-                        form.style.opacity = '0';
-                        setTimeout(() => {
-                            form.style.display = 'none';
-                            noteView.style.display = 'block';
-                            noteView.style.opacity = '0';
-                            setTimeout(() => {
-                                noteView.style.opacity = '1';
-                            }, 10);
-                        }, 300);
-                        
-                        // Başarı mesajı
-                        showNotification('Not başarıyla güncellendi!', 'success');
-                    } else {
-                        alert(data.error || 'Güncelleme başarısız!');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Bir hata oluştu!');
-                })
-                .finally(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                });
+                    
+                    // Modal'ı kapat
+                    closeEditModal();
+                    
+                    // Başarı mesajı
+                    showNotification('Not başarıyla güncellendi!', 'success');
+                } else {
+                    alert(data.error || 'Güncelleme başarısız!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Bir hata oluştu!');
+            })
+            .finally(() => {
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+                submitBtn.disabled = false;
             });
+        });
+
+        // Edit modal için ESC tuşu ve dış tıklama
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const editModal = document.getElementById('editModal');
+                if (editModal.classList.contains('show')) {
+                    closeEditModal();
+                }
+            }
+        });
+
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
         });
 
         // Bildirim gösterme fonksiyonu
